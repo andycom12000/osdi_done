@@ -1,0 +1,48 @@
+diff --git a/lab1/linux-0.11/Makefile b/lab1/linux-0.11/Makefile
+index ddb5be1..1629240 100644
+--- a/lab1/linux-0.11/Makefile
++++ b/lab1/linux-0.11/Makefile
+@@ -34,11 +34,11 @@ MATH	=kernel/math/math.a
+ LIBS	=lib/lib.a
+ 
+ .c.s:
+-@$(CC) $(CFLAGS) -S -o $*.s $<
++	@$(CC) $(CFLAGS) -S -o $*.s $<
+ .s.o:
+-@$(AS)  -o $*.o $<
++	@$(AS)  -o $*.o $<
+ .c.o:
+-@$(CC) $(CFLAGS) -c -o $*.o $<
++	@$(CC) $(CFLAGS) -c -o $*.o $<
+ 
+ all:	Image	
+ 
+diff --git a/lab1/linux-0.11/include/linux/sched.h b/lab1/linux-0.11/include/linux/sched.h
+index 6b6e243..1057807 100644
+--- a/lab1/linux-0.11/include/linux/sched.h
++++ b/lab1/linux-0.11/include/linux/sched.h
+@@ -1,7 +1,7 @@
+ #ifndef _SCHED_H
+ #define _SCHED_H
+ 
+-#define NR_TASKS 0
++#define NR_TASKS 100
+ #define HZ 100
+ 
+ #define FIRST_TASK task[0]
+diff --git a/lab1/linux-0.11/init/main.c b/lab1/linux-0.11/init/main.c
+index 8660535..df12461 100644
+--- a/lab1/linux-0.11/init/main.c
++++ b/lab1/linux-0.11/init/main.c
+@@ -137,7 +137,7 @@ void main(void)		/* This really IS void, no error here. */
+ 	hd_init();
+ 	floppy_init();
+ 	sti();
+-	panic(""); 
++	//panic(""); 
+ 	move_to_user_mode();
+ 	if (!fork()) {		/* we count on this going ok */
+ 		init();
+diff --git a/lab1/linux-0.11/tools/build.sh b/lab1/linux-0.11/tools/build.sh
+old mode 100644
+new mode 100755
