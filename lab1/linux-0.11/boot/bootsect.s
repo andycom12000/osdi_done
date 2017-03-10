@@ -34,10 +34,12 @@
 	.text
 
 	.equ SETUPLEN, 4		# nr of setup-sectors
+	.equ HELLOLEN, 1
 	.equ BOOTSEG, 0x07c0		# original address of boot-sector
 	.equ INITSEG, 0x9000		# we move boot here - out of the way
 	.equ SETUPSEG, 0x9020		# setup starts here
 	.equ SYSSEG, 0x1000		# system loaded at 0x10000 (65536).
+	.equ HELLOSEG, 0x1000
 	.equ ENDSEG, SYSSEG + SYSSIZE	# where to stop loading
 
 # ROOT_DEV:	0x000 - same type of floppy as boot.
@@ -62,12 +64,47 @@ go:	mov	%cs, %ax
 	mov	%ax, %ss
 	mov	$0xFF00, %sp		# arbitrary value >>512
 
+multi_boot:
+	mov	$0x00, %ah
+	int	$0x16
+	cmp	$0x0031, %al
+	je	load_setup
+	cmp $0x0032, %al
+	jne	multi_boot
+
+
+# load hello binary here
+load_hello:
+	mov	$0x0000, %dx		# drive 0, head 0
+	mov $0x0002, %cx		# sector 2, track 0
+	mov $0x0200, %bx		# address = 512, in HELLOREG
+	.equ	AX, 0x0200+HELLOLEN
+	mov	$AX, %ax
+	int	$0x13
+	jnc	ok_load_hello		# Jump if success, reload if failed
+	mov	$0x0000, %dx
+	mov $0x0000, %ax
+	int $0x13
+	jmp load_hello
+
+ok_load_hello:
+# Get disk drive parameters, specifically nr of sectors/track
+	mov	$0x00, %dl
+	mov	$0x0800, %ax		# AH=8 is get drive parameters
+	int	$0x13
+	mov	$0x00, %ch
+	#seg cs
+	mov	%cx, %cs:sectors+0	# %cs means sectors is in %cs
+	mov	$HELLOSEG, %ax
+	mov	%ax, %es
+	jmp load_setup
+
 # load the setup-sectors directly after the bootblock.
 # Note that 'es' is already set up.
 
 load_setup:
 	mov	$0x0000, %dx		# drive 0, head 0
-	mov	$0x0002, %cx		# sector 2, track 0
+	mov $0x0003, %cx		# sector 3, track 0
 	mov	$0x0200, %bx		# address = 512, in INITSEG
 	.equ    AX, 0x0200+SETUPLEN
 	mov     $AX, %ax		# service 2, nr of sectors
@@ -92,7 +129,7 @@ ok_load_setup:
 	mov	%ax, %es
 
 # Print some inane message
-
+post_setup:
 	mov	$0x03, %ah		# read cursor pos
 	xor	%bh, %bh
 	int	$0x10
@@ -147,7 +184,8 @@ root_defined:
 #
 # in:	es - starting address segment (normally 0x1000)
 #
-sread:	.word 1+ SETUPLEN	# sectors read of current track
+#sread:	.word 1+ SETUPLEN	# sectors read of current track
+sread:	.word 2+ SETUPLEN	# sectors read of current track
 head:	.word 0			# current head
 track:	.word 0			# current track
 
