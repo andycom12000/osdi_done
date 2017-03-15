@@ -97,7 +97,6 @@ ok_load_hello:
 	mov	%cx, %cs:sectors+0	# %cs means sectors is in %cs
 	mov	$HELLOSEG, %ax
 	mov	%ax, %es
-	jmp load_setup
 
 # load the setup-sectors directly after the bootblock.
 # Note that 'es' is already set up.
