@@ -97,6 +97,7 @@ ok_load_hello:
 	mov	%cx, %cs:sectors+0	# %cs means sectors is in %cs
 	mov	$HELLOSEG, %ax
 	mov	%ax, %es
+	jmp post_setup
 
 # load the setup-sectors directly after the bootblock.
 # Note that 'es' is already set up.
@@ -128,7 +129,6 @@ ok_load_setup:
 	mov	%ax, %es
 
 # Print some inane message
-post_setup:
 	mov	$0x03, %ah		# read cursor pos
 	xor	%bh, %bh
 	int	$0x10
@@ -142,7 +142,7 @@ post_setup:
 
 # ok, we've written the message, now
 # we want to load the system (at 0x10000)
-
+post_setup:
 	mov	$SYSSEG, %ax
 	mov	%ax, %es		# segment of 0x010000
 	call	read_it
