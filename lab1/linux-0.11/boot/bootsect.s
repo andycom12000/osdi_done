@@ -77,7 +77,9 @@ multi_boot:
 load_hello:
 	mov	$0x0000, %dx		# drive 0, head 0
 	mov $0x0002, %cx		# sector 2, track 0
-	mov $0x0200, %bx		# address = 512, in HELLOREG
+	mov $0x0000, %bx		# address = 512, in HELLOREG
+	mov $0x0100, %ax
+	mov %ax, %es
 	.equ	AX, 0x0200+HELLOLEN
 	mov	$AX, %ax
 	int	$0x13
@@ -89,15 +91,8 @@ load_hello:
 
 ok_load_hello:
 # Get disk drive parameters, specifically nr of sectors/track
-	mov	$0x00, %dl
-	mov	$0x0800, %ax		# AH=8 is get drive parameters
-	int	$0x13
-	mov	$0x00, %ch
-	#seg cs
-	mov	%cx, %cs:sectors+0	# %cs means sectors is in %cs
-	mov	$HELLOSEG, %ax
-	mov	%ax, %es
-	jmp post_setup
+	.equ	sel_cs0, 0x0100
+	ljmp	$sel_cs0, $0
 
 # load the setup-sectors directly after the bootblock.
 # Note that 'es' is already set up.
